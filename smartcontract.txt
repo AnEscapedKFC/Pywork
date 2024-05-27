@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Market {
+    struct CopyrightInfo {
+        address owner;          // 版权所有人
+        string description;     // 信息
+        uint256 price;          // 价格
+        bool isForSale;// 是否出售
+        string key;         
+    }
+
+    mapping(uint256 => CopyrightInfo) public GoodsCopyrights; 
+    //uint类型的最大值是 2^256 - 1
+    //GoodsCopyrights 是一个映射（mapping）类型的变量。用于将商品的唯一标识符（编号）映射到对应的版权信息（包括版权所有者、描述、价格和是否出售状态）。
+    uint256 public Count = 0; // 库中已有的版权数目
+    bool public permission=false; // 本次上传是否已经得到许可
+    //定义了四个事件（event），在函数中用emit触发
+    event CopyrightRegistered(uint256 indexed videoId, address indexed owner, string description, string _key);//注册事件
+    event CopyrightListedForSale(uint256 indexed videoId, uint256 price);
+    event CopyrightSold(uint256 indexed videoId, address indexed newOwner, uint256 price);
+    event permit(bool set);
+
+    function setPermission() public{
+        if(!permission) permission = true;
+        emit permit(true);
+    }// 授权
+    function outPermission() public{
+        if(permission) permission = false;
+        emit permit(false);
+    }// 取消授权
+    
+    modifier permitted() {
+        require(permission==true, "Not Lisensed");
+        _;
+    } ////修饰符，满足require条件后才可执行后续语句
+
+    function getprice(uint256 _GoodId) public view returns (uint256){
+        require(_GoodId <= Count, " not found");
+        require(GoodsCopyrights[_GoodId].isForSale, "Copyright is not for sale");
+        return GoodsCopyrights[_GoodId].price;
+    }
+
+
+    function registerCopyright(string memory _description,string memory _key) public permitted{
+        require(bytes(_description).length > 0, "Description must not be empty");  // _description:商品哈希
+        Count++;
+        uint256 Id = Count; //商品Id
+        GoodsCopyrights[Id] = CopyrightInfo(msg.sender, _description, 0, false,_key); //设置商品的信息
+        emit CopyrightRegistered(Id, msg.sender, _description, _key); //触发事件
+    }
+    
+
+    function listCopyrightForSale(uint256 _goodId, uint256 _price) public{
+        require(_goodId <= Count, " not found");
+        require(msg.sender == GoodsCopyrights[_goodId].owner, "Only the copyright owner can sale it");
+        GoodsCopyrights[_goodId].price = _price * 1 wei;
+        GoodsCopyrights[_goodId].isForSale = true;
+        emit CopyrightListedForSale(_goodId, _price);
+    }
+
+
+    function buyCopyright(uint256 _videoId) external payable {
+        require(_videoId <= Count, " not found");
+        require(GoodsCopyrights[_videoId].isForSale, "Copyright is not for sale");
+        require(msg.value >= GoodsCopyrights[_videoId].price, "Insufficient funds");
+        //address payable previousOwner = payable(GoodsCopyrights[_videoId].owner); //获取卖家地址
+        address payable previousOwner = payable(0x57310a6cb991d579b3Dc7159164f1Ac5C98Dea69); //手动指定卖家地址，便于校验
+        previousOwner.transfer(GoodsCopyrights[_videoId].price * 1 wei); //转账
+        //GoodsCopyrights[_videoId].owner = msg.sender;
+        emit CopyrightSold(_videoId, msg.sender, GoodsCopyrights[_videoId].price);
+        //GoodsCopyrights[_videoId].isForSale = false; 
+    }
+
+
+    function getBalance(address _address) public view returns (uint256){
+        return _address.balance;
+    }
+
+    function getVideoInfo(uint256 _num) public view returns (address, string memory, uint256, bool) {
+        require(_num <= Count, " not found");
+        CopyrightInfo storage video = GoodsCopyrights[_num];
+        return (video.owner, video.description, video.price, video.isForSale);
+    }
+    
+
+    function getKey(uint256 _videoId) public view returns (string memory) {
+    return GoodsCopyrights[_videoId].key;
+}//获取AES密钥地址
+
+    function getdescription(uint256 _videoId) public view returns (string memory) {
+    return GoodsCopyrights[_videoId].description;
+}//获取私钥地址
+
+
+
+}
