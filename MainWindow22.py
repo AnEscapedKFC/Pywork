@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit
 import CryptTest
 import os
 import requests
-global username
+
 import pymysql
 from web3 import Web3
 from Compare import *
@@ -24,14 +24,17 @@ import all1
 global savepath
 import json
 From = Web3.to_checksum_address("0xe524ae3543aef64ff3fbfcaf2419408888ca6153")######################填写from地址
-trade_address = Web3.to_checksum_address("0x8225264cdd88a2349ecc374f64d014a15aee0138")######################填写Contract地址
+trade_address = Web3.to_checksum_address("0xceda3e89f8aabce9ac46a5b84601da3a94d80a2f")######################填写Contract地址
 url = "http://127.0.0.1:7545"  # Ganache地址，默认7545
+username = None
+username_g = None
+
 
 def connect_to_database(): # 连接本地数据库
     global datapassword
     global database
     connection = pymysql.connect(
-        host='127.0.0.1', user='root', password='1234', database='db_4'  # 建立数据库连接
+        host='127.0.0.1', user='root', password='1234', database='db_4'  # 建立数据库连接(4号数据库·)
     )
     return connection
 
@@ -174,6 +177,7 @@ class Ui_MainWindow(object):
     def show_login_dialog(self):  # 展示登录界面
         login_dialog = LoginDialog()  # 创建登录界面类对象
         if login_dialog.exec_() == QtWidgets.QDialog.Accepted:  # 使用 exec_() 方法显示对话框，该方法会阻塞程序的执行，直到用户关闭对话框。
+            global username
             username = login_dialog.text_username.text()  # 如果用户在对话框中点击了"登录"按钮（即 exec_() 返回 QtWidgets.QDialog.Accepted），则获取用户在对话框中输入的用户名。
             global username_g
             username_g = username
@@ -359,7 +363,7 @@ class RegisterDialog(QtWidgets.QDialog):
             return False
 
 
-class LoginDialog(QtWidgets.QDialog):
+class LoginDialog(QtWidgets.QDialog):  # 登录
     def __init__(self):
         super(LoginDialog, self).__init__()
         self.setWindowTitle("用户登录")
@@ -387,6 +391,7 @@ class LoginDialog(QtWidgets.QDialog):
         self.setLayout(layout)
 
     def authenticate(self):  # 更新登陆方式，发送http请求
+        global username
         username = self.text_username.text()
         password = self.text_password.text()
         print(password)
@@ -852,7 +857,7 @@ class SellerSystem(QMainWindow):  # 卖家界面
             file_content = file.read()
         savepath = file_content
         print(f"密文存放路径为：{savepath}\n")
-        username = username_g # 获取用户名
+        print(username)
         private_key_path = "private_a.pem"  # RSA私钥路径
         all1.CreateMerkleTree(savepath)  # 生成密文的默克尔树
         MerkleTree_path = "Merkle1_Tree.txt"  # 密文默克尔树的路径
@@ -1087,7 +1092,7 @@ class BuyerSystem(QMainWindow):  # 买家界面
         product_list_page.show()
 
     def on_purchase_clicked(self):
-        print("购买商品按钮被点击")
+        # print("购买商品按钮被点击")
 
         def center_on_screen(self):
             screen_geometry = QDesktopWidget().screenGeometry()
@@ -1117,7 +1122,7 @@ class BuyerSystem(QMainWindow):  # 买家界面
 
 
 
-class DecryptFilePage(QMainWindow):  # 二级窗口
+class DecryptFilePage(QMainWindow):  # 二级窗口,解密文件
     def __init__(self):
         super(DecryptFilePage, self).__init__()
         self.setWindowTitle("解密文件界面")
