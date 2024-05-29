@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QDesktopWidget, QApplication, QMainWindow, QDialog,
 QTableWidget,QVBoxLayout, QTextBrowser, QMessageBox, QFileDialog, QRadioButton, QTableWidgetItem,QDialogButtonBox,
                              QInputDialog,QHBoxLayout)
 import datetime
-from PyQt5 import QtCore, QtGui, QtWidgets,QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTextEdit
 import CryptTest
 import os
@@ -34,7 +34,7 @@ def connect_to_database(): # 连接本地数据库
     global datapassword
     global database
     connection = pymysql.connect(
-        host='127.0.0.1', user='root', password='1234', database='db_4'  # 建立数据库连接(4号数据库·)
+        host='127.0.0.1', user='root', password='1234', database='db_5'  # 建立数据库连接(4号数据库·)
     )
     return connection
 
@@ -864,14 +864,14 @@ class SellerSystem(QMainWindow):  # 卖家界面
         # 密文上传到IPFS(需先启动go-ipfs服务)
         client = ipfshttpclient.connect('/ip4/127.0.0.1/tcp/5001/http')
         file_hash = client.add(savepath)['Hash']  # 上传密文，并获取密文的hash地址
-        pkey_hash = client.add(private_key_path)['Hash']  # 上传RSA私钥， 并获取其hash地址
+        pkey_hash = client.add(private_key_path)['Hash']  # 上传RSA公钥， 并获取其hash地址
         key_hash = client.add("KEY")['Hash']  # 上传AES密钥， 并获取其hash地址
         MerkleTree_hash = client.add(MerkleTree_path)['Hash']  # 上传密文默克尔树，并获取其hash地址
         # print(f"{file_hash}")
         id = SmartContract1.get_id_num() + 1  # 在当前库中最大id基础上+1，作为本次上传商品的id
         new_goods(username, filesize, file_hash, price, name, id, pkey_hash, key_hash, MerkleTree_hash)  # 上传新的商品信息到数据库
         # 在智能合约中上架：
-        price_in_wei = int(price * 10 ** 18)  # 将价格转换为str型变量
+        price_in_wei = int(price * 10 ** 18)  # 将价格转换为wei类型
         SmartContract1.upload_blockchain_video_onsale(From, key_hash, price_in_wei, pkey_hash)  # 上架AES密钥地址，价格，RSA密钥地址
 
 
