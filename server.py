@@ -114,18 +114,6 @@ def login():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/info", methods=['POST'])
-def info():
-    pass
-
-
-@app.route("info/userinfo", methods=['POST', 'GET'])
-def userinfo():
-    data = request.json
-    username = data.get('username')
-    money = db.session.query(Person).filter_by(username=username).first()  # 查询用户余额
-
-
 @app.route("/email", methods=['POST','GET'])
 def get_email_captcha():
     data = request.json  # 获取从 PyQt5 应用程序发送的 JSON 数据
@@ -148,12 +136,8 @@ def get_email_captcha():
     return jsonify({"code": 200, "message": "", "data": None})  # f返回json格式的字符串
 
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
-
-
-
-
-  #U
